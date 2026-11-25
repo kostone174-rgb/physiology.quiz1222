@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>간호학과 생리학 마스터 퀴즈</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-light: #e0f2fe;
+      --secondary: #0ea5e9;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --warning: #f59e0b;
+      --bg-gradient: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 30%, #bae6fd 65%, #e0f2fe 100%);
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #bae6fd;
+      --shadow: 0 16px 36px -4px rgba(12, 74, 110, 0.18), 0 8px 16px -6px rgba(12, 74, 110, 0.1);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 20px 80px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 눈 내리는 캔버스 배경 */
+    #snowCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 하단 설원 바닥 언덕 장식 */
+    .winter-ground {
+      position: fixed;
+      bottom: -15px;
+      left: -5%;
+      width: 110%;
+      height: 70px;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+      border-radius: 50% 50% 0 0;
+      box-shadow: 0 -4px 16px rgba(14, 116, 144, 0.1);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 34px 30px;
+      position: relative;
+      overflow: visible;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      z-index: 10;
+    }
+
+    /* 컨테이너 상단에 소복이 쌓인 눈 효과 */
+    .container::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 18px;
+      right: 18px;
+      height: 14px;
+      background: #ffffff;
+      border-radius: 14px 14px 6px 6px;
+      box-shadow: 0 3px 6px rgba(14, 116, 144, 0.12);
+      z-index: 12;
+    }
+
+    /* 귀여운 3D 눈사람 캐릭터 스타일 */
+    .snowman-character {
+      position: absolute;
+      right: -28px;
+      bottom: -32px;
+      width: 115px;
+      height: 135px;
+      z-index: 15;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 8px 12px rgba(12, 74, 110, 0.22));
+      animation: snowmanSway 3.6s ease-in-out infinite;
+    }
+
+    .snowman-character:hover {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    @keyframes snowmanSway {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(3deg) translateY(-2px); }
+    }
+
+    /* 상단 장식 바 */
+    .top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9, #0284c7, #38bdf8);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    /* 헤더 영역 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      border: 1px solid #bae6fd;
+    }
+
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef3c7;
+      color: #b45309;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      border: 1px solid #fde68a;
+    }
+
+    /* 프로그레스 바 */
+    .progress-wrap {
+      width: 100%;
+      height: 9px;
+      background: #e0f2fe;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      border: 1px solid #bae6fd;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 10%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8, #06b6d4);
+      transition: width 0.35s ease;
+      border-radius: 9999px;
+    }
+
+    /* 문제 영역 */
+    .question-category {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #0284c7;
+      background: #f0f9ff;
+      padding: 3px 10px;
+      border-radius: 8px;
+      border: 1px solid #bae6fd;
+      letter-spacing: 0.03em;
+      margin-bottom: 10px;
+    }
+
+    .question-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #0f172a;
+      margin-bottom: 24px;
+      word-break: keep-all;
+    }
+
+    /* 얼음 테마 선택지 목록 */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      margin-bottom: 24px;
+    }
+
+    /* 얼음 블록(Ice Block) 선지 버튼 스타일 */
+    .option-btn {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      width: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.85) 50%, rgba(224, 242, 254, 0.95) 100%);
+      border: 2px solid #93c5fd;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-size: 0.975rem;
+      font-weight: 500;
+      text-align: left;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+      line-height: 1.45;
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 2px rgba(186, 230, 253, 0.6),
+        0 4px 8px rgba(186, 230, 253, 0.45);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+    }
+
+    /* 얼음 표면의 반짝임 하이라이트 */
+    .option-btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+      transform: skewX(-25deg);
+      pointer-events: none;
+      transition: left 0.6s ease;
+    }
+
+    .option-btn:hover:not(:disabled)::after {
+      left: 130%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+      box-shadow: 
+        inset 0 1px 3px rgba(255, 255, 255, 1),
+        0 8px 16px rgba(56, 189, 248, 0.25);
+    }
+
+    .option-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    /* 얼음 큐브 번호 뱃지 */
+    .option-index {
+      flex-shrink: 0;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border: 1px solid #7dd3fc;
+      box-shadow: 0 2px 5px rgba(2, 132, 199, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    /* 정답: 민트빛 에메랄드 얼음 */
+    .option-btn.correct {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 60%, #a7f3d0 100%) !important;
+      border-color: #059669 !important;
+      color: #064e3b !important;
+      font-weight: 600;
+      box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
+    }
+
+    .option-btn.correct .option-index {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #34d399;
+      color: #ffffff;
+    }
+
+    /* 오답: 루비빛 프로즌 체리 얼음 */
+    .option-btn.wrong {
+      background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 60%, #fecaca 100%) !important;
+      border-color: #dc2626 !important;
+      color: #7f1d1d !important;
+      font-weight: 600;
+      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .option-btn.wrong .option-index {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border-color: #f87171;
+      color: #ffffff;
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+    /* 해설 박스 */
+    .explanation-box {
+      display: none;
+      background: #f8fafc;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .explanation-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .explanation-text {
+      font-size: 0.9rem;
+      color: #374151;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    /* 하단 액션 버튼 */
+    .action-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-main {
+      background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+      color: #ffffff;
+      border: none;
+      padding: 12px 26px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-main:disabled {
+      background: #d1d5db;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 최종 결과 화면 */
+    .result-screen {
+      text-align: center;
+      padding: 16px 0;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .result-icon {
+      font-size: 3.8rem;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .result-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    .score-circle {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border: 4px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .score-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card.correct-card {
+      background: var(--success-light);
+      border-color: #a7f3d0;
+    }
+
+    .stat-card.wrong-card {
+      background: var(--danger-light);
+      border-color: #fecaca;
+    }
+
+    .stat-val {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .stat-val.green { color: #059669; }
+    .stat-val.red { color: #dc2626; }
+
+    .result-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #cbd5e1;
+    }
+
+    /* 오답노트 모달/뷰 */
+    .notebook-view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .notebook-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .notebook-list {
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .notebook-item {
+      background: #ffffff;
+      border: 1.5px solid #fed7aa;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .notebook-item-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-bottom: 10px;
+      color: #1f2937;
+    }
+
+    .notebook-pick {
+      font-size: 0.88rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .notebook-pick.wrong {
+      background: var(--danger-light);
+      color: #991b1b;
+    }
+
+    .notebook-pick.right {
+      background: var(--success-light);
+      color: #065f46;
+    }
+
+    .notebook-expl {
+      margin-top: 10px;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .empty-notebook {
+      text-align: center;
+      padding: 40px 10px;
+      color: var(--text-muted);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 24px 18px;
+      }
+      .question-title {
+        font-size: 1.1rem;
+      }
+      .option-btn {
+        font-size: 0.9rem;
+        padding: 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="top-accent"></div>
+
+    <!-- 1. 퀴즈 진행 화면 -->
+    <div id="quizScreen">
+      <div class="header">
+        <div class="badge-pill" id="questionProgressBadge">
+          <span>🩺 문제</span> <span id="currentQNum">1</span> / 10
+        </div>
+        <div class="score-badge">
+          <span>⭐ 현재 점수:</span> <span id="currentScoreDisplay">0</span>점
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="question-category" id="qCategory">세포 생리학</div>
+      <h2 class="question-title" id="qTitle">문제가 표시됩니다.</h2>
+
+      <div class="options-list" id="optionsContainer">
+        <!-- 5지선다 버튼 렌더링 -->
+      </div>
+
+      <!-- 정답 선택 후 나타나는 해설 박스 -->
+      <div class="explanation-box" id="explanationBox">
+        <div class="explanation-title" id="explanationStatus">
+          <!-- 정답 / 오답 메시지 -->
+        </div>
+        <div class="explanation-text" id="explanationContent">
+          <!-- 상세 해설 내용 -->
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-main" id="nextBtn" disabled>다음 문제 ➔</button>
+      </div>
+    </div>
+
+    <!-- 2. 최종 결과 화면 -->
+    <div id="resultScreen" class="result-screen" style="display: none;">
+      <div class="result-icon" id="resultIcon">🎉</div>
+      <h2 class="result-title" id="resultTitle">생리학 퀴즈 완료!</h2>
+      <p class="result-desc" id="resultComment">수고하셨습니다! 결과를 확인하세요.</p>
+
+      <div class="score-circle">
+        <div class="score-number" id="finalScore">0</div>
+        <div class="score-label">100점 만점</div>
+      </div>
+
+      <div class="result-stats">
+        <div class="stat-card correct-card">
+          <div style="font-size: 0.85rem; color: #047857; font-weight: 600;">맞힌 문제</div>
+          <div class="stat-val green"><span id="correctCount">0</span> / 10</div>
+        </div>
+        <div class="stat-card wrong-card">
+          <div style="font-size: 0.85rem; color: #b91c1c; font-weight: 600;">틀린 문제</div>
+          <div class="stat-val red"><span id="wrongCount">0</span> / 10</div>
+        </div>
+      </div>
+
+      <div class="result-btn-group">
+        <button class="btn-main" id="openNotebookBtn" style="justify-content: center; width: 100%;">
+          📝 오답노트 확인하기 (<span id="notebookCountBadge">0</span>개)
+        </button>
+        <button class="btn-secondary" id="restartBtn">
+          🔄 다시 시작하기
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. 오답노트 화면 -->
+    <div id="notebookScreen" class="notebook-view">
+      <div class="notebook-header">
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: #b45309;">📝 생리학 오답노트</h3>
+        <span class="badge-pill" style="background:#ffedd5; color:#c2410c;" id="notebookTotal">오답 0문항</span>
+      </div>
+
+      <div class="notebook-list" id="notebookList">
+        <!-- 오답 목록 렌더링 -->
+      </div>
+
+      <button class="btn-secondary" id="backToResultBtn" style="width: 100%;">
+        ⬅️ 결과 화면으로 돌아가기
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 간호학과 핵심 생리학 10문제 데이터 (5지선다)
+    const quizData = [
+      {
+        id: 1,
+        category: "세포 생리 / 물질 수송",
+        question: "세포막을 통한 물질 수송 중 나트륨-칼륨 펌프(Na⁺-K⁺ ATPase)의 작용에 대한 설명으로 가장 옳은 것은?",
+        options: [
+          "ATP 소모 없이 단순 확산에 의해 작동한다.",
+          "세포 밖으로 3개의 Na⁺을 내보내고, 세포 안으로 2개의 K⁺을 들여온다.",
+          "세포 밖으로 2개의 Na⁺을 내보내고, 세포 안으로 3개의 K⁺을 들여온다.",
+          "Na⁺과 K⁺을 모두 농도 기울기(경사)에 순응하여 수송한다.",
+          "주로 세포 외액의 K⁺ 농도를 높이고 세포 내액의 Na⁺ 농도를 높이기 위해 작동한다."
+        ],
+        answer: 1, // 0-indexed (2번)
+        explanation: "Na⁺-K⁺ 펌프는 대표적인 '1차 능동수송(Primary Active Transport)'으로, ATP를 1분자 가수분해하여 농도 경사에 역행해 3개의 Na⁺을 세포 외로 방출하고 2개의 K⁺을 세포 내로 유입시킵니다. 이로 인해 휴지 막전위 유지 및 세포 내외 이온 농도 차이가 형성됩니다."
+      },
+      {
+        id: 2,
+        category: "신경 생리 / 흥분 전도",
+        question: "신경세포에서 활동전위(Action Potential)가 발생할 때, 탈분극(Depolarization)을 일으키는 주된 이온의 이동은?",
+        options: [
+          "K⁺의 급격한 세포 외 유출",
+          "전압개폐성 Na⁺ 통로 개방에 따른 Na⁺의 급격한 세포 내 유입",
+          "Ca²⁺의 세포 외 유출",
+          "Cl⁻의 세포 내 유입",
+          "K⁺ 통로의 지속적인 열림에 따른 세포막 과분극"
+        ],
+        answer: 1,
+        explanation: "역치(Threshold) 이상의 자극이 가해지면 전압개폐성 Na⁺ 통로가 활성화되면서 전기화학적 구동력에 의해 다량의 Na⁺이 세포 안으로 급격히 유입(Inflow)되어 세포막 내부 전하가 양(+)전하로 반전되는 탈분극이 일어납니다."
+      },
+      {
+        id: 3,
+        category: "순환계 생리 / 심장 전도계",
+        question: "심장의 전기 전도계에서 정상적인 심장 박동의 속도를 조절하는 기본 '율동조율기(Pacemaker)'는 어디인가?",
+        options: [
+          "방실결절 (Atrioventricular node, AV node)",
+          "동방결절 (Sinoatrial node, SA node)",
+          "히스 번들 (Bundle of His)",
+          "푸르키녜 섬유 (Purkinje fibers)",
+          "심실간 중격 (Interventricular septum)"
+        ],
+        answer: 1,
+        explanation: "동방결절(SA node)은 우심방 상벽에 위치하며 자발적 탈분극 속도(분당 약 60~100회)가 가장 빠르기 때문에 정상 상태에서 심박동을 지휘하는 주 율동조율기 역할을 담당합니다."
+      },
+      {
+        id: 4,
+        category: "호흡기계 생리 / 폐 기능",
+        question: "폐포의 표면장력을 감소시켜 호기 말기 폐포의 허탈(Atelectasis)을 방지하는 물질과 분비 세포의 조합으로 옳은 것은?",
+        options: [
+          "폐포 대식세포 - 히스타민",
+          "제1형 폐포세포 - 점액질",
+          "제2형 폐포세포 - 폐표면활성제(Surfactant)",
+          "기관지 섬모세포 - 뮤신(Mucin)",
+          "혈관내피세포 - 헤파린"
+        ],
+        answer: 2,
+        explanation: "제2형 폐포세포(Type II alveolar cells)는 인지질과 단백질로 이루어진 폐표면활성제(Surfactant)를 분비합니다. 이는 수분 분자 간의 인력을 줄여 폐포의 표면장력을 낮춤으로써 호흡 시 폐포가 쭈그러드는 허탈을 막고 폐 순응도를 증가시킵니다."
+      },
+      {
+        id: 5,
+        category: "비뇨기계 생리 / 신장 기능",
+        question: "신장의 네프론(Nephron)에서 여과된 포도당과 아미노산이 정상 상태에서 거의 100% 능동적으로 재흡수되는 부위는?",
+        options: [
+          "보우만 주머니 (Bowman's capsule)",
+          "원위세뇨관 (Distal convoluted tubule)",
+          "헨레고리 상행각 (Ascending limb of Henle)",
+          "근위세뇨관 (Proximal convoluted tubule)",
+          "집합관 (Collecting duct)"
+        ],
+        answer: 3,
+        explanation: "근위세뇨관(Proximal convoluted tubule)은 미세융모가 발달하여 표면적이 넓으며, 사구체에서 여과된 포도당, 아미노산 전량과 수분 및 전해질의 약 65~70%를 재흡수하는 핵심 부위입니다."
+      },
+      {
+        id: 6,
+        category: "내분비계 생리 / 칼슘 항상성",
+        question: "혈중 칼슘(Ca²⁺) 농도가 기준치 이하로 저하되었을 때 분비가 촉진되어 파골세포를 자극하고 신장의 칼슘 재흡수를 유도하는 호르몬은?",
+        options: [
+          "칼시토닌 (Calcitonin)",
+          "부갑상샘호르몬 (Parathyroid hormone, PTH)",
+          "알도스테론 (Aldosterone)",
+          "갑상샘호르몬 (Thyroxine, T4)",
+          "항이뇨호르몬 (Vasopressin)"
+        ],
+        answer: 1,
+        explanation: "혈중 칼슘 농도가 감소하면 부갑상샘에서 부갑상샘호르몬(PTH)이 분비됩니다. PTH는 골흡수(파골세포 활성화) 촉진, 신장의 Ca²⁺ 재흡수 촉진 및 비타민 D 활성화를 통한 장관 칼슘 흡수 증가로 혈중 칼슘 농도를 상승시킵니다. (반대로 칼시토닌은 혈중 칼슘을 낮춥니다)"
+      },
+      {
+        id: 7,
+        category: "신경계 생리 / 자율신경",
+        question: "자율신경계 중 부교감신경의 '절후신경섬유(Postganglionic fiber)' 말단에서 분비되는 신경전달물질과 작용하는 표적 수용체는?",
+        options: [
+          "에피네프린 - 알파 수용체",
+          "노르에피네프린 - 베타 수용체",
+          "아세틸콜린(ACh) - 무스카린(Muscarinic) 수용체",
+          "아세틸콜린(ACh) - 니코틴(Nicotinic) N1 수용체",
+          "도파민 - D2 수용체"
+        ],
+        answer: 2,
+        explanation: "부교감신경은 절전 및 절후섬유 말단 모두에서 아세틸콜린(ACh)을 분비합니다. 특히 절후신경섬유 말단에서 방출된 ACh는 표적장기의 '무스카린성 수용체(Muscarinic receptor)'에 결합하여 서맥, 장관 운동 촉진 등의 부교감 효과를 나타냅니다."
+      },
+      {
+        id: 8,
+        category: "근골격계 생리 / 근수축 기전",
+        question: "골격근 수축의 활주설(Sliding filament theory)에서, 칼슘 이온(Ca²⁺)이 결합하여 액틴(Actin)의 미오신 결합부위를 노출시키는 단백질은?",
+        options: [
+          "트로포닌 (Troponin)",
+          "트로포미오신 (Tropomyosin)",
+          "미오신 두부 (Myosin head)",
+          "티틴 (Titin)",
+          "미오글로빈 (Myoglobin)"
+        ],
+        answer: 0,
+        explanation: "근소포체에서 방출된 Ca²⁺은 트로포닌 C(Troponin)와 결합합니다. 이때 트로포닌의 입체구조가 변하면서 액틴의 활성 결합 자리를 가리고 있던 트로포미오신을 옆으로 밀어내어, 미오신 머리가 액틴과 교차교(Cross-bridge)를 형성할 수 있게 만듭니다."
+      },
+      {
+        id: 9,
+        category: "호흡 / 혈액 생리 (보어 효과)",
+        question: "산소-헤모글로빈 해리 곡선(O₂-Hb dissociation curve)을 '우측으로 편위(오른쪽 이동)'시켜 조직으로의 산소 유리를 촉진하는 환경 조건은?",
+        options: [
+          "혈액 pH 상승 (알칼리증)",
+          "이산화탄소 분압(PCO₂) 감소",
+          "조직 온도 저하",
+          "혈액 내 H⁺ 농도 증가 (pH 저하 / 산성화)",
+          "2,3-DPG 농도 감소"
+        ],
+        answer: 3,
+        explanation: "곡선이 우측으로 이동한다는 것은 헤모글로빈의 산소 친화도가 감소하여 조직 세포에 산소를 더 쉽게 방출함을 의미합니다. 활동하는 조직(대사율 증가)의 특징인 [pH 저하(H⁺ 증가), PCO₂ 상승, 체온 상승, 2,3-DPG 증가]는 곡선을 우측으로 이동시킵니다(보어 효과, Bohr effect)."
+      },
+      {
+        id: 10,
+        category: "내분비 / 체액 조절",
+        question: "체내 삼투압 상승이나 혈액량 감소 시 뇌하수체 후엽에서 분비되어 신장 원위세뇨관 및 집합관의 수분 재흡수를 촉진하는 호르몬은?",
+        options: [
+          "옥시토신 (Oxytocin)",
+          "심방나트륨이뇨펩티드 (ANP)",
+          "항이뇨호르몬 (ADH / Vasopressin)",
+          "코르티솔 (Cortisol)",
+          "레닌 (Renin)"
+        ],
+        answer: 2,
+        explanation: "시상하부의 삼투수용기가 혈장 삼투압 상승을 감지하면 시상하부에서 합성되고 뇌하수체 후엽에 저장되어 있던 항이뇨호르몬(ADH/바소프레신)이 분비됩니다. ADH는 집합관 상피세포의 아쿠아포린-2(수분통로)를 활성화시켜 수분 재흡수를 대폭 촉진합니다."
+      }
+    ];
+
+    // 상태 변수
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let wrongRecords = []; // 오답노트 저장 배열
+
+    // DOM 요소
+    const quizScreen = document.getElementById("quizScreen");
+    const resultScreen = document.getElementById("resultScreen");
+    const notebookScreen = document.getElementById("notebookScreen");
+
+    const currentQNum = document.getElementById("currentQNum");
+    const currentScoreDisplay = document.getElementById("currentScoreDisplay");
+    const progressBar = document.getElementById("progressBar");
+    const qCategory = document.getElementById("qCategory");
+    const qTitle = document.getElementById("qTitle");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const explanationBox = document.getElementById("explanationBox");
+    const explanationStatus = document.getElementById("explanationStatus");
+    const explanationContent = document.getElementById("explanationContent");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const finalScore = document.getElementById("finalScore");
+    const correctCount = document.getElementById("correctCount");
+    const wrongCount = document.getElementById("wrongCount");
+    const notebookCountBadge = document.getElementById("notebookCountBadge");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultComment = document.getElementById("resultComment");
+    const resultIcon = document.getElementById("resultIcon");
+
+    const openNotebookBtn = document.getElementById("openNotebookBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const backToResultBtn = document.getElementById("backToResultBtn");
+    const notebookList = document.getElementById("notebookList");
+    const notebookTotal = document.getElementById("notebookTotal");
+
+    // 간단한 Web Audio API 효과음 생성 (외부 파일 의존 없음)
+    const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+    function playBeep(isSuccess) {
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (isSuccess) {
+        // 정답 음: 상큼한 높은 화음
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.15); // G5
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else {
+        // 오답 음: 낮은 단음
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+        osc.frequency.setValueAtTime(196, audioCtx.currentTime + 0.1); // G3
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      }
+    }
+
+    // 문제 렌더링 함수
+    function renderQuestion() {
+      answered = false;
+      nextBtn.disabled = true;
+      explanationBox.style.display = "none";
+
+      const currentQ = quizData[currentIndex];
+
+      // 헤더 & 프로그레스 업데이트
+      currentQNum.textContent = currentIndex + 1;
+      currentScoreDisplay.textContent = score;
+      const progressPercent = ((currentIndex + 1) / quizData.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      qCategory.textContent = currentQ.category;
+      qTitle.textContent = `${currentIndex + 1}. ${currentQ.question}`;
+
+      // 선택지 5개 렌더링
+      optionsContainer.innerHTML = "";
+      currentQ.options.forEach((optText, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.dataset.index = idx;
+
+        btn.innerHTML = `
+          <span class="option-index">${idx + 1}</span>
+          <span>${optText}</span>
+        `;
+
+        btn.addEventListener("click", () => handleSelectOption(idx));
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    // 선택지 클릭 처리
+    function handleSelectOption(selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const currentQ = quizData[currentIndex];
+      const isCorrect = (selectedIndex === currentQ.answer);
+      const optionButtons = optionsContainer.querySelectorAll(".option-btn");
+
+      // 모든 버튼 비활성화 및 정답/오답 하이라이트
+      optionButtons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === currentQ.answer) {
+          btn.classList.add("correct");
+        }
+        if (idx === selectedIndex && !isCorrect) {
+          btn.classList.add("wrong");
+        }
+      });
+
+      // 점수 처리 및 피드백
+      if (isCorrect) {
+        score += 10;
+        currentScoreDisplay.textContent = score;
+        explanationStatus.innerHTML = "🎉 <span style='color: #059669;'>정답입니다! (+10점)</span>";
+        playBeep(true);
+      } else {
+        explanationStatus.innerHTML = "❌ <span style='color: #dc2626;'>아쉽네요, 오답입니다!</span>";
+        playBeep(false);
+        // 오답노트에 기록
+        wrongRecords.push({
+          qNum: currentIndex + 1,
+          question: currentQ.question,
+          category: currentQ.category,
+          userChoice: currentQ.options[selectedIndex],
+          userChoiceIdx: selectedIndex + 1,
+          correctChoice: currentQ.options[currentQ.answer],
+          correctChoiceIdx: currentQ.answer + 1,
+          explanation: currentQ.explanation
+        });
+      }
+
+      // 해설 노출 및 다음 버튼 활성화
+      explanationContent.textContent = currentQ.explanation;
+      explanationBox.style.display = "block";
+      nextBtn.disabled = false;
+      nextBtn.focus();
+    }
+
+    // 다음 문제로 이동
+    nextBtn.addEventListener("click", () => {
+      if (currentIndex < quizData.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    // 최종 결과 화면 표시
+    function showResult() {
+      quizScreen.style.display = "none";
+      notebookScreen.style.display = "none";
+      resultScreen.style.display = "block";
+
+      finalScore.textContent = score;
+      const correctNum = score / 10;
+      const wrongNum = quizData.length - correctNum;
+
+      correctCount.textContent = correctNum;
+      wrongCount.textContent = wrongNum;
+      notebookCountBadge.textContent = wrongRecords.length;
+
+      // 점수별 멘트 분기
+      if (score === 100) {
+        resultIcon.textContent = "🏆";
+        resultTitle.textContent = "완벽한 만점! 생리학 마스터";
+        resultComment.textContent = "놀라워요! 간호학과 생리학 핵심 개념을 완벽하게 파악하고 계시네요.";
+      } else if (score >= 80) {
+        resultIcon.textContent = "👏";
+        resultTitle.textContent = "우수한 성적입니다!";
+        resultComment.textContent = "생리학 기본기가 탄탄합니다. 틀린 문제만 오답노트로 복습해 보세요!";
+      } else if (score >= 60) {
+        resultIcon.textContent = "💡";
+        resultTitle.textContent = "조금만 더 복습하면 완벽해요!";
+        resultComment.textContent = "어려운 생리학 용어들이 많죠? 오답노트를 반복 학습하면 점수가 쑥쑥 오릅니다.";
+      } else {
+        resultIcon.textContent = "💪";
+        resultTitle.textContent = "생리학 정복을 응원합니다!";
+        resultComment.textContent = "생리학은 반복이 핵심입니다. 오답노트의 상세 해설을 정독하고 다시 도전해보세요!";
+      }
+    }
+
+    // 오답노트 열기
+    openNotebookBtn.addEventListener("click", () => {
+      resultScreen.style.display = "none";
+      notebookScreen.style.display = "block";
+
+      notebookTotal.textContent = `총 ${wrongRecords.length}문항 오답`;
+      notebookList.innerHTML = "";
+
+      if (wrongRecords.length === 0) {
+        notebookList.innerHTML = `
+          <div class="empty-notebook">
+            <div style="font-size: 3rem; margin-bottom: 8px;">✨</div>
+            <div style="font-weight: 700; color: #10b981; font-size: 1.1rem;">틀린 문제가 없습니다!</div>
+            <p style="margin-top: 4px; font-size: 0.9rem;">100점 만점으로 모든 생리학 문제를 맞히셨습니다.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrongRecords.forEach((item) => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "notebook-item";
+        itemEl.innerHTML = `
+          <div style="font-size: 0.78rem; color: #b45309; font-weight: 700; margin-bottom: 4px;">[${item.category}]</div>
+          <div class="notebook-item-title">Q${item.qNum}. ${item.question}</div>
+          <div class="notebook-pick wrong"><strong>내가 고른 오답 (${item.userChoiceIdx}번):</strong> ${item.userChoice}</div>
+          <div class="notebook-pick right"><strong>실제 정답 (${item.correctChoiceIdx}번):</strong> ${item.correctChoice}</div>
+          <div class="notebook-expl">💡 <strong>해설:</strong> ${item.explanation}</div>
+        `;
+        notebookList.appendChild(itemEl);
+      });
+    });
+
+    // 오답노트에서 결과 화면으로 복귀
+    backToResultBtn.addEventListener("click", () => {
+      notebookScreen.style.display = "none";
+      resultScreen.style.display = "block";
+    });
+
+    // 퀴즈 다시 시작하기
+    restartBtn.addEventListener("click", () => {
+      currentIndex = 0;
+      score = 0;
+      answered = false;
+      wrongRecords = [];
+
+      resultScreen.style.display = "none";
+      notebookScreen.style.display = "none";
+      quizScreen.style.display = "block";
+
+      renderQuestion();
+    });
+    // --- 겨울 테마 효과 (눈 내리는 애니메이션 & 눈사람 캐릭터) ---
+    function initWinterEffects() {
+      // 1. 눈 내리는 Canvas 및 설원 배경 생성
+      const canvas = document.createElement("canvas");
+      canvas.id = "snowCanvas";
+      document.body.prepend(canvas);
+
+      const ground = document.createElement("div");
+      ground.className = "winter-ground";
+      document.body.appendChild(ground);
+
+      // 2. 귀여운 SVG 눈사람 일러스트 생성 및 퀴즈 박스에 부착
+      const container = document.querySelector(".container");
+      if (container) {
+        const snowmanDiv = document.createElement("div");
+        snowmanDiv.className = "snowman-character";
+        snowmanDiv.title = "안녕! 생리학 열공 중인 눈사람이야 ⛄ (클릭해봐!)";
+        snowmanDiv.innerHTML = `
+          <svg viewBox="0 0 120 140" width="100%" height="100%" style="overflow:visible;">
+            <!-- 그림자 -->
+            <ellipse cx="60" cy="130" rx="36" ry="8" fill="rgba(14, 116, 144, 0.18)" />
+            <!-- 눈사람 아래 몸통 -->
+            <circle cx="60" cy="98" r="32" fill="#ffffff" stroke="#bae6fd" stroke-width="2" />
+            <circle cx="60" cy="98" r="30" fill="url(#snowGrad)" />
+            <!-- 눈사람 얼굴 -->
+            <circle cx="60" cy="52" r="23" fill="#ffffff" stroke="#bae6fd" stroke-width="2" />
+            <circle cx="60" cy="52" r="21" fill="url(#snowGrad)" />
+            <!-- 단추 -->
+            <circle cx="60" cy="88" r="3" fill="#0369a1" />
+            <circle cx="60" cy="100" r="3" fill="#0369a1" />
+            <circle cx="60" cy="112" r="3" fill="#0369a1" />
+            <!-- 발그레한 볼 -->
+            <ellipse cx="49" cy="56" rx="3.5" ry="2" fill="#fca5a5" opacity="0.65" />
+            <ellipse cx="71" cy="56" rx="3.5" ry="2" fill="#fca5a5" opacity="0.65" />
+            <!-- 눈망울 -->
+            <circle cx="52" cy="48" r="2.5" fill="#1e293b" />
+            <circle cx="68" cy="48" r="2.5" fill="#1e293b" />
+            <circle cx="53" cy="47" r="0.8" fill="#ffffff" />
+            <circle cx="69" cy="47" r="0.8" fill="#ffffff" />
+            <!-- 당근 코 -->
+            <polygon points="58,52 62,52 76,55" fill="#f97316" stroke="#ea580c" stroke-width="0.8" stroke-linejoin="round" />
+            <!-- 따뜻한 빨간 목도리 -->
+            <path d="M 41 66 C 41 66, 60 74, 79 66 C 82 72, 73 76, 60 76 C 47 76, 38 71, 41 66 Z" fill="#ef4444" />
+            <rect x="64" y="70" width="10" height="23" rx="3" fill="#dc2626" transform="rotate(-12 64 70)" />
+            <!-- 파란 털모자 -->
+            <ellipse cx="60" cy="34" rx="20" ry="5.5" fill="#0284c7" />
+            <path d="M 44 33 C 44 14, 76 14, 76 33 Z" fill="#0369a1" />
+            <circle cx="60" cy="14" r="6" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5" />
+            <rect x="42" y="30" width="36" height="6" rx="3" fill="#ffffff" />
+            <!-- 나뭇가지 팔 -->
+            <path d="M 32 90 L 14 78 M 19 81 L 16 71" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" />
+            <path d="M 88 90 L 106 80 M 101 82 L 103 72" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" />
+            <!-- 그라데이션 정의 -->
+            <defs>
+              <linearGradient id="snowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#e0f2fe" />
+              </linearGradient>
+            </defs>
+          </svg>
+        `;
+        snowmanDiv.addEventListener("click", () => {
+          snowmanDiv.style.transform = "scale(1.22) rotate(12deg)";
+          setTimeout(() => { snowmanDiv.style.transform = ""; }, 300);
+        });
+        container.appendChild(snowmanDiv);
+      }
+
+      // 3. 흩날리는 부드러운 눈 애니메이션
+      const ctx = canvas.getContext("2d");
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const flakes = [];
+      const flakeCount = 65;
+      for (let i = 0; i < flakeCount; i++) {
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 3.5 + 1.2,
+          speedY: Math.random() * 1.3 + 0.6,
+          speedX: Math.random() * 0.8 - 0.4,
+          opacity: Math.random() * 0.6 + 0.35,
+          swing: Math.random() * 2,
+          swingStep: Math.random() * 0.025
+        });
+      }
+
+      function drawSnow() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < flakeCount; i++) {
+          const f = flakes[i];
+          f.swing += f.swingStep;
+          f.y += f.speedY;
+          f.x += f.speedX + Math.sin(f.swing) * 0.4;
+
+          if (f.y > height) {
+            f.y = -10;
+            f.x = Math.random() * width;
+          }
+          if (f.x > width) f.x = 0;
+          if (f.x < 0) f.x = width;
+
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(drawSnow);
+      }
+      drawSnow();
+    }
+
+    // 초기 실행
+    initWinterEffects();
+    renderQuestion();
+  </script>
+</body>
+</html>
